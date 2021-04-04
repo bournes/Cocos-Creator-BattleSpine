@@ -45,9 +45,23 @@ export default class BattleControl extends cc.Component {
     protected onLoad(): void {
         this.initGameData();
         this.initGameShow();
-        this.startGame()
+      
     }
 
+
+    public update(){
+        if(this.loadIndex>10){
+            return
+        }
+        console.error(this.loadIndex);
+        
+        if(this.loadIndex == 10){
+          //加载的spine个数，这里需要做动态取值处理
+              this.startGame()
+              this.loadIndex++
+        }
+
+    }
 
     // 初始化场景和战斗数据
     public initGameData(): void {
