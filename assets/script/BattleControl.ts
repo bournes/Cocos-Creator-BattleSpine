@@ -1,8 +1,8 @@
 import Utils from "./Utils";
-import {HeroBattleData, HeroData, HeroStatus} from "./interface";
+import { HeroBattleData, HeroData, HeroStatus } from "./interface";
 import HeroControl from './HeroControl';
 
-const {ccclass, property} = cc._decorator;
+const { ccclass, property } = cc._decorator;
 
 @ccclass
 export default class BattleControl extends cc.Component {
@@ -42,27 +42,50 @@ export default class BattleControl extends cc.Component {
     // 攻击的目标
     public targetEnemy: HeroBattleData = null;
 
+    //整体的行动速度
+    public battleActionSpeed: number = 1;
+
     protected onLoad(): void {
         this.initGameData();
         this.initGameShow();
-      
+
     }
 
 
-    public update(){
-        if(this.loadIndex>10){
+    public update() {
+        if (this.loadIndex > 10) {
             return
         }
         console.error(this.loadIndex);
-        
-        if(this.loadIndex == 10){
-          //加载的spine个数，这里需要做动态取值处理
-              this.startGame()
-              this.loadIndex++
+
+        if (this.loadIndex == 10) {
+            //加载的spine个数，这里需要做动态取值处理
+            this.startGame()
+            this.loadIndex++
         }
 
     }
 
+
+
+    public chanageSpeed(evt, data) {
+        console.error("点击了几倍速", data)
+
+        for (let i = 0; i < Utils.HERO_COUNT; i++) {
+            // 初始化左边的英雄
+            this.leftHeroNode[i].getComponent(sp.Skeleton).timeScale = data;
+
+            // 初始化右边的英雄
+            this.rightHeroNode[i].getComponent(sp.Skeleton).timeScale = data;
+
+
+        }
+
+        this.battleActionSpeed = 1 / data
+
+
+    }
+ 
     // 初始化场景和战斗数据
     public initGameData(): void {
         for (let i = 0; i < Utils.HERO_COUNT; i++) {
@@ -140,6 +163,8 @@ export default class BattleControl extends cc.Component {
             skeleton.skeletonData = res;
             // 设置骨骼的动画
             skeleton.animation = 'Idle';
+            //初始化速度
+            // skeleton.timeScale= 1;
 
             // 当前加载的下标加一
             this.loadIndex++;
@@ -240,7 +265,7 @@ export default class BattleControl extends cc.Component {
             atkHeroNode = this.rightHeroNode[attacker.id];
         }
         cc.tween(atkHeroNode)
-            .to(0.5, {position: targetPos})
+            .to(0.5 * this.battleActionSpeed, { position: targetPos })
             .call(e => {
                 // 进入攻击状态
                 this.setAnimState(attacker, HeroStatus.HERO_STATE_ATK);
@@ -302,7 +327,7 @@ export default class BattleControl extends cc.Component {
             // 回到原来的位置动画
             skeleton.setAnimation(0, 'Run', false);
             cc.tween(atkHeroNode)
-                .to(0.2, {position: backPos})
+                .to(0.2 * this.battleActionSpeed, { position: backPos })
                 .call(e => {
                     this.setAnimState(attacker, HeroStatus.HERO_STATE_WAIT);
                 })
@@ -339,7 +364,7 @@ export default class BattleControl extends cc.Component {
         skeleton.setTrackCompleteListener(dieTrackEntry, trackEntry => {
             console.log(99999);
             cc.tween(heroNode)
-                .to(0.5, {opacity: 0})
+                .to(0.5 * this.battleActionSpeed, { opacity: 0 })
                 .removeSelf()
                 .start();
         });
